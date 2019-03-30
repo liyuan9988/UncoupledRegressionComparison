@@ -50,10 +50,11 @@ class TaylorCUmodel:
                 optimizer.step()
 
             logger.debug("Epoch %d, loss %f"%(epoch, loss.item()))
-        
+        logger.info("TaylorCU fit finished")
 
     def predict_val(self, X):
         pred =  self.model(torch.tensor(X).float()).detach().numpy()[:,0]
+        logger.info("TaylorCU predict finished")
         return pred
         
 

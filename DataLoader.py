@@ -16,7 +16,7 @@ class DataLoader:
     
     def refresh_data(self):
         logger.info("start building data: %s"%self.data_name)
-        if(self.data_name == "unif"):
+        if(self.data_name == "uniform"):
             self.X, self.y = self.load_unif_data(**self.data_config)
         elif(self.data_name == "normal"):
             self.X, self.y = self.load_normal_data(**self.data_config)
@@ -25,10 +25,11 @@ class DataLoader:
         elif(self.data_name == "boston"):
             self.X, self.y = self.load_boston_data()
         else:
-            ValueError("invalid data name %s"%self.data_name)
+            raise ValueError("invalid data name %s"%self.data_name)
         logger.info("complete building")
 
     def build_comaparative_dataset(self, n_pairs):
+        logger.info("start tranform comparative")
         nData, nDim = self.X.shape
         Compara_X = np.empty((n_pairs, nDim*2))
         Compara_y = np.empty((n_pairs,))
@@ -40,10 +41,12 @@ class DataLoader:
                 Compara_y[i] = 1
             else:
                 Compara_y[i] = 0
+        logger.info("end tranform comparative")
         return Compara_X, Compara_y
 
     @staticmethod
     def transform_dataset_to_CU(Compara_X, Compara_y):
+        logger.info("start transform CU")
         n_sample, nDim = Compara_X.shape[0], int(Compara_X.shape[1] / 2 )
         X_plus = np.empty((n_sample, nDim))
         X_minus = np.empty((n_sample, nDim))
@@ -54,6 +57,7 @@ class DataLoader:
             else:
                 X_plus[i] = Compara_X[i,nDim:]
                 X_minus[i] = Compara_X[i,:nDim]
+        logger.info("end transform CU")
         return X_plus, X_minus
 
     def load_unif_data(self, n_sample, nDim, const, lower = 0.0, upper = 1.0, noise = 0.1):

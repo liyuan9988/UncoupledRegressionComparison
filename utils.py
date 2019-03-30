@@ -18,6 +18,27 @@ def find_quantile_one(cdf_func, prob, lowerS = -10.0, upperS = 10.0):
         lowerS[mid_p < prob] = mid_S[mid_p < prob]
     return mid_S
 
+def get_CDF_and_dense(data_name, data_config, y_array):
+    if(data_name == "uniform"):
+        lower = data_config.get("lower", 0.0) * data_config["const"]
+        upper = data_config.get("upper", 1.0) * data_config["const"]
+        cdf_func = uniform_CDF(lower, upper)
+        dense_func = lambda x: 1.0
+    elif(data_name == "normal"):
+        mu = 0.0
+        noise = data_config.get("noise", 0.1)
+        var = np.sqrt(1.0 + noise*noise)
+        cdf_func = normal_CDF(mu, var)
+        dense_func = normal_dense(mu, var)
+    else:
+        cdf_func = KDE_CDF(y_array)
+        dense_func = KDE_dense(y_array)
+
+    return cdf_func, dense_func
+        
+
+
+
 def uniform_CDF(lower=0.0, upper = 1.0):
     def cdf(x):
         res = (x - lower)/(upper - lower)

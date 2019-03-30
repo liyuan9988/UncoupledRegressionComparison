@@ -1,0 +1,32 @@
+{
+    "data_name": "uniform",
+    "n_pairs": 100,
+    "n_repeats": 100,
+    "data_config":{
+        "n_sample": 100000,
+        "nDim": 5,
+        "const": 1.0, 
+        "lower": 0.0,
+        "upper": 1.0,
+        "noise": 0.1
+    },
+
+    "CU_option":{
+        "link_func": "linear",
+        "reg": 0.0,
+        "lam": 0.5,
+        "lr" : 0.001,
+        "momentum": 0.9, 
+        "unlabel_batch": 100,
+        "n_epochs" : 1
+    },
+
+    "TaylorCU_option":{
+        "reg": 0.0,
+        "lam": 0.5,
+        "lr" : 0.001,
+        "momentum": 0.9, 
+        "unlabel_batch": 100,
+        "n_epochs" : 1
+    }
+}

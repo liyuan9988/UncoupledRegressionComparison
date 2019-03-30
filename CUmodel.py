@@ -22,7 +22,7 @@ class CUmodel:
     def __init__(self):
         pass
 
-    def fit(self, X_plus, X_minus, cdf_func, X_unlabeled = None, link_func = None, reg = 0.0, lam = 0.5, lr=0.001, momentum=0.9, unlabel_batch = 100, n_epochs = 1):
+    def fit(self, X_plus, X_minus, cdf_func, X_unlabeled = None, link_func = "linear", reg = 0.0, lam = 0.5, lr=0.001, momentum=0.9, unlabel_batch = 100, n_epochs = 1):
         self.cdf_func = cdf_func
         self.reg = reg
         nDim = X_plus.shape[1]
@@ -31,10 +31,12 @@ class CUmodel:
         else:
             self.X_unlabeled = np.r_[X_plus, X_minus]
 
-        if(link_func is None):
+        if(link_func == "linear"):
             self.model = nn.Linear(nDim,1)
         elif(link_func == "sigmoid"):
             self.model = nn.Sequential(nn.Linear(nDim,1), nn.Sigmoid())
+        else:
+            raise ValueError("invalid link func :%s"%link_func)
 
         optimizer = optim.SGD(self.model.parameters(), lr=lr, momentum=momentum, weight_decay = reg, )
         criterion = CULoss(lam)
@@ -54,11 +56,13 @@ class CUmodel:
                 optimizer.step()
 
             logger.debug("Epoch %d, loss %f"%(epoch, loss.item()))
+        logger.info("CU fit finished")
 
     def predict_val(self, X, lowerS = -10, upperS = 10):
         pred = self.model(torch.tensor(X).float()).detach().numpy()[:,0]
-        return find_quantile_one(self.cdf_func, pred, lowerS, upperS)
-
+        pred = find_quantile_one(self.cdf_func, pred, lowerS, upperS)
+        logger.info("CU predict finished")
+        return pred
    
 
 

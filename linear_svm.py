@@ -21,7 +21,7 @@ class SVMRank:
         diff_X = Compara_X[:,:nDim]-Compara_X[:,nDim:]
         logger.debug("SVMRank: start fitting")
         self.mdl.fit(diff_X,Compara_y)
-        logger.debug("SVMRank: end fitting")
+        logger.info("SVMRank: end fitting")
     
     def predict_score(self,X):
         return self.mdl.predict(X)

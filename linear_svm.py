@@ -19,9 +19,9 @@ class SVMRank:
         else:
             self.X_unlabeled = np.r_[Compara_X[:,:nDim], Compara_X[:,nDim:]]
         diff_X = Compara_X[:,:nDim]-Compara_X[:,nDim:]
-        logger.info("SVMRank: start fitting")
+        logger.debug("SVMRank: start fitting")
         self.mdl.fit(diff_X,Compara_y)
-        logger.info("SVMRank: end fitting")
+        logger.debug("SVMRank: end fitting")
     
     def predict_score(self,X):
         return self.mdl.predict(X)
@@ -39,5 +39,5 @@ class SVMRank:
         score = self.predict_score(X)
         rank = np.argsort(score)
         prob = (rank+1.0)/(X.shape[0]+1.0)
-        return np.array([find_quantile_one(self.cdf_func,p,lowerS, upperS) for p in prob])
+        return find_quantile_one(self.cdf_func,prob,lowerS, upperS)
 

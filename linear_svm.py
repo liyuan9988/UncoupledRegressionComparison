@@ -1,6 +1,8 @@
 import numpy as np
-from utils import build_dataset,find_quantile_one
+from utils import find_quantile_one
 from sklearn.svm import LinearSVC
+import logging
+logger = logging.getLogger(__name__)
 
 
 class SVMRank:
@@ -8,17 +10,18 @@ class SVMRank:
     def __init__(self):
         pass
 
-    def fit(self, org_X, org_y, cdf_func, n_sample, random_seed = 42, use_unlabeled = False):
+    def fit(self, Compara_X, Compara_y, cdf_func, unlabel_X = None):
+        nDim = Compara_X.shape[1] // 2
         self.cdf_func = cdf_func
-        nDim = org_X.shape[1]
-        Compara_X, Compara_y = build_dataset(org_X, org_y, n_sample)
         self.mdl = LinearSVC()
-        if(use_unlabeled):
-            self.X_unlabeled = org_X
+        if(unlabel_X is not None):
+            self.X_unlabeled = unlabel_X
         else:
             self.X_unlabeled = np.r_[Compara_X[:,:nDim], Compara_X[:,nDim:]]
         diff_X = Compara_X[:,:nDim]-Compara_X[:,nDim:]
+        logger.info("SVMRank: start fitting")
         self.mdl.fit(diff_X,Compara_y)
+        logger.info("SVMRank: end fitting")
     
     def predict_score(self,X):
         return self.mdl.predict(X)

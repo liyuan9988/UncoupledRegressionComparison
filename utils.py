@@ -2,35 +2,6 @@ import numpy as np
 from scipy.special import erfinv, erf
 from math import pi
 
-def build_dataset(org_X, org_y, n_sample, rand_seed = 42):
-    np.random.seed(rand_seed)
-    nData, nDim = org_X.shape
-    Compara_X = np.empty((n_sample, nDim*2))
-    Compara_y = np.empty((n_sample,))
-    for i in range(n_sample):
-        idx1,idx2 = np.random.choice(nData, 2, False)
-        Compara_X[i,:nDim] = org_X[idx1]
-        Compara_X[i,nDim:] = org_X[idx2]
-        if(org_y[idx1] >= org_y[idx2]):
-            Compara_y[i] = 1
-        else:
-            Compara_y[i] = 0
-    return Compara_X, Compara_y
-
-
-def transform_dataset_to_CU(Compara_X, Compara_y):
-    n_sample, nDim = Compara_X.shape[0], int(Compara_X.shape[1] / 2 )
-    X_plus = np.empty((n_sample, nDim))
-    X_minus = np.empty((n_sample, nDim))
-    for i in range(n_sample):
-        if(Compara_y[i] == 1):
-            X_plus[i] = Compara_X[i,:nDim]
-            X_minus[i] = Compara_X[i,nDim:]
-        else:
-            X_plus[i] = Compara_X[i,nDim:]
-            X_minus[i] = Compara_X[i,:nDim]
-    return X_plus, X_minus
-
 def find_quantile_one(cdf_func, prob, lowerS = -10.0, upperS = 10.0):
     lower_p = cdf_func(lowerS)
     upper_p = cdf_func(upperS)

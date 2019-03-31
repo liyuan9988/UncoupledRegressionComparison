@@ -13,6 +13,7 @@ class TaylorCULoss(nn.Module):
         self.taylor_point = taylor_point
         self.dense_at_taylor =  dense_at_taylor
         self.cdf_at_taylor =  cdf_at_taylor
+        logger.debug((taylor_point, dense_at_taylor, cdf_at_taylor))
         super(TaylorCULoss, self).__init__()
 
     def forward(self, unlabeled_input, plus_input, minus_input):
@@ -25,31 +26,31 @@ class TaylorCUmodel:
     def __init__(self):
         pass
     
-    def fit(self, X_plus, X_minus, taylor_point, dense_at_taylor, cdf_at_taylor,X_unlabeled = None,  reg = 0.0, lam = 0.5, lr=0.001, momentum=0.9, unlabel_batch = 100, n_epochs = 1):
+    def fit(self, X_plus, X_minus, taylor_point, dense_at_taylor, cdf_at_taylor,X_unlabeled = None,  reg = 0.0, lam = 0.5, n_epochs = 1):
         nDim = X_plus.shape[1]
         if(X_unlabeled is not None):
             self.X_unlabeled = X_unlabeled
         else:
             self.X_unlabeled = np.r_[X_plus, X_minus]
         self.model = nn.Linear(nDim,1)
-        optimizer = optim.SGD(self.model.parameters(), lr=lr, momentum=momentum, weight_decay = reg, )
+        optimizer = optim.LBFGS(self.model.parameters())
         criterion = TaylorCULoss(lam, taylor_point, dense_at_taylor, cdf_at_taylor)
         t_X_plus = torch.tensor(X_plus).float()
         t_X_minus = torch.tensor(X_minus).float()
         t_X_unlabeled = torch.tensor(X_unlabeled).float()
-        unlabel_loader = DataLoader(TensorDataset(t_X_unlabeled), unlabel_batch)
+        logger.debug("start learning")
         logger.debug("start learning")
         for epoch in range(n_epochs):
-            for (unlabel_input,) in unlabel_loader:
+            def closure():
                 optimizer.zero_grad()
                 plus_input = self.model(t_X_plus)
                 minus_input = self.model(t_X_minus)
-                unlabel_input = self.model(unlabel_input)
+                unlabel_input = self.model(t_X_unlabeled)
                 loss = criterion(unlabel_input, plus_input, minus_input)
                 loss.backward()
-                optimizer.step()
-
-            logger.debug("Epoch %d, loss %f"%(epoch, loss.item()))
+                return loss
+            optimizer.step(closure)
+            logger.debug("Epoch %d, loss %f"%(epoch, closure().item()))
         logger.info("TaylorCU fit finished")
 
     def predict_val(self, X):

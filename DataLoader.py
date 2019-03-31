@@ -60,7 +60,7 @@ class DataLoader:
         logger.info("end transform CU")
         return X_plus, X_minus
 
-    def load_unif_data(self, n_sample, nDim, const, lower = 0.0, upper = 1.0, noise = 0.1):
+    def load_unif_data(self, n_sample, nDim, const = 1.0, lower = 0.0, upper = 1.0, noise = 0.1):
         X = np.random.uniform(lower,upper,(n_sample,nDim))
         theta = np.zeros(nDim)
         theta[0] = const

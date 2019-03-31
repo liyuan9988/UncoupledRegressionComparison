@@ -1,32 +1,22 @@
 {
-    "data_name": "uniform",
-    "n_pairs": 100,
-    "n_repeats": 100,
+    "data_name": "normal",
+    "n_pairs": [10000],
+    "n_repeats": 1,
     "data_config":{
         "n_sample": 100000,
-        "nDim": 5,
-        "const": 1.0, 
-        "lower": 0.0,
-        "upper": 1.0,
+        "nDim": 3,
         "noise": 0.1
     },
 
     "CU_option":{
-        "link_func": "linear",
-        "reg": 0.0,
+        "reg": 0.001,
         "lam": 0.5,
-        "lr" : 0.001,
-        "momentum": 0.9, 
-        "unlabel_batch": 100,
-        "n_epochs" : 1
+        "n_epochs" : 10
     },
 
     "TaylorCU_option":{
-        "reg": 0.0,
+        "reg": 0.001,
         "lam": 0.5,
-        "lr" : 0.001,
-        "momentum": 0.9, 
-        "unlabel_batch": 100,
-        "n_epochs" : 1
+        "n_epochs" : 10
     }
 }

@@ -1,83 +1,58 @@
 import numpy as np
+from scipy.optimize import minimize
 from utils import find_quantile_one
-import torch
-from torch import nn, optim
-from torch.utils.data import TensorDataset, DataLoader
 import logging
 logger = logging.getLogger(__name__)
 
-class CULoss(nn.Module):
-
-    def __init__(self, lam):
-        self.lam = lam
-        super(CULoss, self).__init__()
-
-    def forward(self, unlabeled_input, plus_input, minus_input):
-        loss = -self.lam * torch.mean(plus_input)
-        loss += (1-self.lam) * torch.mean(minus_input)
-        loss -= torch.mean((1-self.lam-unlabeled_input)*2.0*unlabeled_input + unlabeled_input*unlabeled_input)
-        return loss
-
-class CUmodelT(nn.Module):
-    def __init__(self, nDim, link_func):
-        super(CUmodelT, self).__init__()
-        self.weight = nn.Linear(nDim, 1)
-        self.link_func = link_func
-
-    def forward(self, input):
-        pred = self.weight(input)
-        if(self.link_func is not None):
-            pred = self.link_func(pred)
-        return pred
+def score(x, mdl):
+    return mdl._score(x)
 
 class CUmodel:
     def __init__(self):
         pass
+    
+    def _score(self, param):
+        unlabeled_predict = self.link_func(self.X_unlabeled.dot(param[1:]) + param[0])
+        plus_predict = self.link_func(self.X_plus.dot(param[1:])+param[0])
+        minus_predict = self.link_func(self.X_minus.dot(param[1:])+param[0])
+        #loss for positive
+        loss = -0.5*np.mean(plus_predict)
+        loss += 0.5*np.mean(minus_predict)
+        loss -= np.mean((1.0-2*unlabeled_predict)*unlabeled_predict + unlabeled_predict*unlabeled_predict)
+        loss += self.reg * np.sum(param*param)
+        return loss
 
-    def fit(self, X_plus, X_minus, cdf_func, X_unlabeled = None, link_func = None, reg = 0.0, lam = 0.5, n_epochs = 3):
+
+    def fit(self, X_plus, X_minus, cdf_func, link_func, X_unlabeled = None, reg = 0.0):
+
         self.cdf_func = cdf_func
         self.reg = reg
         nDim = X_plus.shape[1]
+        self.X_plus = X_plus
+        self.X_minus = X_minus
         if(X_unlabeled is not None):
-            self.X_unlabeled = X_unlabeled
+            self.X_unlabeled = np.array(X_unlabeled)
         else:
-            self.X_unlabeled = np.r_[X_plus, X_minus]
-
-        self.model = CUmodelT(nDim, link_func)
-        
-        optimizer = optim.LBFGS(self.model.parameters())
-        criterion = CULoss(lam)
-        t_X_plus = torch.tensor(X_plus).float()
-        t_X_minus = torch.tensor(X_minus).float()
-        t_X_unlabeled = torch.tensor(X_unlabeled).float()
-        logger.debug("start learning")
-        for epoch in range(n_epochs):
-            def closure():
-                optimizer.zero_grad()
-                plus_input = self.model(t_X_plus)
-                minus_input = self.model(t_X_minus)
-                unlabel_input = self.model(t_X_unlabeled)
-                loss = criterion(unlabel_input, plus_input, minus_input)
-                decay = torch.sum(self.model.weight._parameters["weight"]*self.model.weight._parameters["weight"])
-                loss += decay * reg
-                loss.backward()
-                return loss
-            optimizer.step(closure)
-            logger.debug("Epoch %d, loss %f"%(epoch, closure().item()))
-        logger.info("CU fit finished")
+            self.X_unlabeled = np.r_[self.X_plus, self.X_minus]
+        self.link_func = link_func
+        x0 = np.zeros(nDim+1)
+        logger.debug("start training")
+        params = minimize(score, x0, args = (self,))
+        self.param = params["x"]
+        logger.debug("end training")
 
     def predict_val(self, X, lowerS = -10, upperS = 10):
-        pred = self.model(torch.tensor(X).float()).detach().numpy()[:,0]
-        pred = find_quantile_one(self.cdf_func, pred, lowerS, upperS)
-        logger.info("CU predict finished")
+        pred = self.link_func(X.dot(self.param[1:])+self.param[0])
+        #return np.array([find_quantile_one(self.cdf_func,p,lowerS,upperS) for p in pred])
+        return find_quantile_one(self.cdf_func,pred,lowerS,upperS)
+
+    def predict_prob(self, X):
+        pred = self.link_func(X.dot(self.param[1:])+self.param[0])
         return pred
-    
+
     def predict_org(self, X):
-        pred =  self.model(torch.tensor(X).float()).detach().numpy()[:,0]
-        logger.info("CU predict finished")
-        return pred
-        
-   
+        return X.dot(self.param[1:]) + self.param[0]
+
 
 
 

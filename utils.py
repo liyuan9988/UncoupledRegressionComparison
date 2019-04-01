@@ -2,6 +2,8 @@ import numpy as np
 from scipy.special import erfinv, erf
 from math import pi
 import torch
+from scipy.special import expit
+
 
 def find_quantile_one(cdf_func, prob, lowerS = -10.0, upperS = 10.0):
     assert len(prob.shape) == 1
@@ -26,20 +28,20 @@ def get_CDF_and_dense(data_name, data_config, y_array):
         upper = data_config.get("upper", 1.0) * const
         cdf_func = uniform_CDF(lower, upper)
         dense_func = lambda x: 1.0
-        link_func_T = None
+        link_func = cdf_func
     elif(data_name == "normal"):
         mu = 0.0
         noise = data_config.get("noise", 0.1)
         var = np.sqrt(1.0 + noise*noise)
         cdf_func = normal_CDF(mu, var)
         dense_func = normal_dense(mu, var)
-        link_func_T = normal_CDF_T(mu, var)
+        link_func = cdf_func
     else:
-        cdf_func = KDE_CDF(y_array)
-        dense_func = KDE_dense(y_array)
-        link_func_T = torch.sigmoid
+        cdf_func = KDE_CDF(y_array, data_config.get("sigma",0.1))
+        dense_func = KDE_dense(y_array, data_config.get("sigma",0.1))
+        link_func = expit
 
-    return cdf_func, dense_func, link_func_T
+    return cdf_func, dense_func, link_func
         
 
 

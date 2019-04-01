@@ -1,7 +1,6 @@
 import numpy as np
 from sklearn.datasets import load_boston
 from math import pi, cos
-np.random.seed(42)
 import logging
 logger = logging.getLogger(__name__)
 
@@ -51,7 +50,7 @@ class DataLoader:
         X_plus = np.empty((n_sample, nDim))
         X_minus = np.empty((n_sample, nDim))
         for i in range(n_sample):
-            if(Compara_y[i] == 1):
+            if(Compara_y[i] >= 0.5):
                 X_plus[i] = Compara_X[i,:nDim]
                 X_minus[i] = Compara_X[i,nDim:]
             else:

@@ -13,12 +13,17 @@ class SVMRank:
     def fit(self, Compara_X, Compara_y, cdf_func, unlabel_X = None):
         nDim = Compara_X.shape[1] // 2
         self.cdf_func = cdf_func
-        self.mdl = LinearSVC()
+        self.mdl = LinearSVC(max_iter=5000)
         if(unlabel_X is not None):
             self.X_unlabeled = unlabel_X
         else:
             self.X_unlabeled = np.r_[Compara_X[:,:nDim], Compara_X[:,nDim:]]
         diff_X = Compara_X[:,:nDim]-Compara_X[:,nDim:]
+        if(np.sum(Compara_y < 0.5) == 0 or np.sum(Compara_y > 0.5) == 0):
+            nData = diff_X.shape[0]
+            diff_X[:nData//2] = -diff_X[:nData//2]
+            Compara_y[:nData//2] = 1-Compara_y[:nData//2]
+            Compara_X[:nData//2,:nDim], Compara_X[:nData//2,nDim:] = Compara_X[:nData//2, nDim:], Compara_X[:nData//2,:nDim]
         logger.debug("SVMRank: start fitting")
         self.mdl.fit(diff_X,Compara_y)
         logger.info("SVMRank: end fitting")

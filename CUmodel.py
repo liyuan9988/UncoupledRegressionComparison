@@ -18,7 +18,7 @@ class CUmodel:
         #loss for positive
         loss = -0.5*np.mean(plus_predict)
         loss += 0.5*np.mean(minus_predict)
-        loss -= np.mean((1.0-2*unlabeled_predict)*unlabeled_predict + unlabeled_predict*unlabeled_predict)
+        loss -= np.mean(unlabeled_predict - unlabeled_predict*unlabeled_predict)
         loss += self.reg * np.sum(param*param)
         return loss
 
@@ -38,6 +38,7 @@ class CUmodel:
         x0 = np.zeros(nDim+1)
         logger.debug("start training")
         params = minimize(score, x0, args = (self,))
+        logger.debug(params)
         self.param = params["x"]
         logger.debug("end training")
 

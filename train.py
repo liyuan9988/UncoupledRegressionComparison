@@ -15,8 +15,7 @@ logger = logging.getLogger(__name__)
 n_models = 4
 
 def train_one(data_name, n_pairs, data_config, CU_config, TaylorCU_config, random_seed):
-    np.random.seed(random_seed)
-    data_loader  = DataLoader(data_name, data_config)
+    data_loader  = DataLoader(data_name, data_config, random_seed)
     Compara_X, Compara_y = data_loader.build_comaparative_dataset(n_pairs)
     cdf_func, dense_func, link_func = get_CDF_and_dense(data_name, data_config, data_loader.y)
 
@@ -30,8 +29,8 @@ def train_one(data_name, n_pairs, data_config, CU_config, TaylorCU_config, rando
     mdl1 = CUmodel()
     mdl1.fit(X_plus,X_minus,cdf_func, link_func, data_loader.X,**CU_config)
     err1 = data_loader.y - mdl1.predict_val(data_loader.X, lowerS = min_y, upperS = max_y)
-   
-    
+
+
     mdl2 = TaylorCUmodel()
     taylor_point = np.mean(data_loader.y)
     dense_at_taylor = dense_func(taylor_point)
@@ -66,19 +65,12 @@ def train_all(config_name, nparallel):
     logging.basicConfig(level=logging.DEBUG, format=fmt)
     res_means = np.empty((n_models, len(n_pairs_list)))
     res_vars = np.empty((n_models, len(n_pairs_list)))
-    """
+    
     for idx, n_pairs in enumerate(n_pairs_list):
         res = [train_one(data_name, n_pairs, data_config, CU_config, TaylorCU_config, i) for i in range(n_repeat)]
         res = np.array(res)
         res_means[:,idx] = np.mean(res, axis = 0)
         res_vars[:, idx] = np.var(res, axis = 0)
-    """
-    for idx, n_pairs in enumerate(n_pairs_list):
-        with Pool(process = nparallel) as p:
-            res = p.starmap(train_one, [(data_name, n_pairs, data_config, CU_config, TaylorCU_config, i) for i in range(n_repeat)])
-            res_means[:,idx] = np.mean(res, axis = 0)
-            res_vars[:, idx] = np.var(res, axis = 0)
-
 
     np.save(config_name[:-5]+".mean.npy", res_means)
     np.save(config_name[:-5]+".var.npy", res_vars)

@@ -3,6 +3,7 @@ from DataLoader import DataLoader
 from linear_svm import SVMRank
 from CUmodel import CUmodel
 from TaylorCUmodel import TaylorCUmodel
+from OptimizedTaylorCUmodel import OptimizedTaylorCUmodel
 from utils import get_CDF_and_dense
 from multiprocessing import Pool
 import json
@@ -12,7 +13,7 @@ import torch
 from sklearn.linear_model import LinearRegression
 logger = logging.getLogger(__name__)
 
-n_models = 4
+n_models = 5
 
 def train_one(data_name, n_pairs, data_config, CU_config, TaylorCU_config, random_seed):
     data_loader  = DataLoader(data_name, data_config, random_seed)
@@ -42,11 +43,16 @@ def train_one(data_name, n_pairs, data_config, CU_config, TaylorCU_config, rando
     lr.fit(data_loader.X, data_loader.y)
     err3 = data_loader.y - lr.predict(data_loader.X)
 
-    logger.debug((np.mean(err*err),np.mean(err1*err1), np.mean(err2*err2), np.mean(err3*err3)))
+    mdl3 = OptimizedTaylorCUmodel()
+    mdl3.fit(X_plus, X_minus, cdf_func, dense_func, min_y, max_y, data_loader.X)
+    err4 = data_loader.y - mdl3.predict_val(data_loader.X)
+
+    logger.debug((np.mean(err*err),np.mean(err1*err1), np.mean(err2*err2), np.mean(err3*err3), np.mean(err4*err4)))
     logger.debug(mdl1.param)
     logger.debug(mdl2.param)
+    logger.debug(mdl3.param)
     logger.debug(lr.coef_)
-    return np.array((np.mean(err*err),np.mean(err1*err1), np.mean(err2*err2), np.mean(err3*err3)))
+    return np.array((np.mean(err*err),np.mean(err1*err1), np.mean(err2*err2), np.mean(err3*err3), np.mean(err4*err4)))
 
 
 @click.command()

@@ -41,7 +41,7 @@ class OptimizedTaylorCUmodel:
         logger.debug("optimized weight:"+str(self.weight))
 
     def fit(self, X_plus, X_minus, cdf_func, dense_func, min_y, max_y,  X_unlabeled = None, 
-    reg = 0.0):
+    reg = 0.0, optimal_weight = None):
         self.dense_func =  dense_func
         self.cdf_func =  cdf_func
         self.reg = reg
@@ -52,7 +52,10 @@ class OptimizedTaylorCUmodel:
             self.X_unlabeled = np.array(X_unlabeled)
         else:
             self.X_unlabeled = np.r_[self.X_plus, self.X_minus]
-        self.derive_optimal_const(min_y, max_y)
+        if(optimal_weight is None):
+            self.derive_optimal_const(min_y, max_y)
+        else:
+            self.weight = optimal_weight
         
         x0 = np.zeros(nDim+1)
         logger.debug("start training")

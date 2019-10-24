@@ -4,3 +4,5 @@ configs
 junk2
 img
 *.npy
+.mypy_cache
+data

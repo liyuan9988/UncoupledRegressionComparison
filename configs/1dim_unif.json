@@ -1,0 +1,21 @@
+{
+    "data_name": ["uniform"],
+    "n_pairs": [160,320,640,1280,2560,5120,10240],
+    "n_repeats": 100,
+    "data_config":{
+        "n_sample": 100000,
+        "test_ratio":0.2,
+        "nDim": 1,
+        "lower": -1,
+        "noise": 0.5,
+        "const": -1
+    },
+
+    "CU_option":{
+        "reg": 0.0
+    },
+
+    "TaylorCU_option":{
+        "reg": 0.0
+    }
+}

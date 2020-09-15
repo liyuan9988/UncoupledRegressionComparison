@@ -1,0 +1,17 @@
+{
+    "data_name": ["boston"],
+    "n_pairs": [20, 40, 80, 160, 320, 640, 1280, 2560, 5120, 10240],
+    "n_repeats": 100,
+    "data_config":{
+        "sigma": 5.0,
+        "test_ratio": 0.2
+    },
+
+    "CU_option":{
+        "reg": 0.0
+    },
+
+    "TaylorCU_option":{
+        "reg": 0.0
+    }
+}

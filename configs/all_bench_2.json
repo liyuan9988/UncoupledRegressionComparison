@@ -1,0 +1,16 @@
+{
+    "data_name": ["mpg","grid","redwine","whitewine"],
+    "n_pairs": [100,5000],
+    "n_repeats": 30,
+    "data_config":{
+        "test_ratio":0.2
+    },
+
+    "CU_option":{
+        "reg": 0.0
+    },
+
+    "TaylorCU_option":{
+        "reg": 0.0
+    }
+}

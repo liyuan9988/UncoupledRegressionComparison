@@ -36,6 +36,7 @@ def train_one(data_name, n_pairs, data_config, CU_config, TaylorCU_config, rando
     X_plus, X_minus = DataLoader.transform_dataset_to_CU(Compara_X, Compara_y)
     mdl1 = CUmodel()
     mdl1.fit(X_plus, X_minus, cdf_func, link_func, data_loader.X_train, **CU_config)
+    logger.debug("CU return to train")
     err1 = data_loader.y_test - mdl1.predict_val(data_loader.X_test, lowerS=min_y, upperS=max_y)
 
     logger.debug("train LR")
@@ -46,9 +47,9 @@ def train_one(data_name, n_pairs, data_config, CU_config, TaylorCU_config, rando
 
     mdl3 = OptimizedTaylorCUmodel()
     optimal_weight = None
-    if(data_name == "uniform"):
-        optimal_weight = np.array([0.5, 0.5, -0.5])
-    mdl3.fit(X_plus, X_minus, cdf_func, dense_func, min_y, max_y, data_loader.X_train, optimal_weight)
+#    if(data_name == "uniform"):
+#        optimal_weight = np.array([0.5, 0.5, -0.5])
+    mdl3.fit(X_plus, X_minus, cdf_func, dense_func, min_y, max_y, data_loader.X_train, 0.0, optimal_weight)
     err4 = data_loader.y_test - mdl3.predict_val(data_loader.X_test)
 
     mdl4 = LinearShuffle()

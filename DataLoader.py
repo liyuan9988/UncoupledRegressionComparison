@@ -100,7 +100,7 @@ class DataLoader:
         theta = np.random.normal(0,1,nDim)
         theta /= np.linalg.norm(theta)
         if(nDim == 1):
-            theta = np.array([1.0])
+            theta = np.array([-1.0])
         self.X_train = np.random.normal(0,1,(n_sample,nDim))
         ntest = int(test_ratio*n_sample)
         self.X_test = np.random.normal(0,1,(ntest,nDim))

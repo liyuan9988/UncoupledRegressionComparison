@@ -12,6 +12,8 @@ logger = logging.getLogger(__name__)
 
 def find_quantile_one(cdf_func, prob, lowerS = -10.0, upperS = 10.0):
     assert len(prob.shape) == 1
+    prob[prob > 0.999] = 0.999
+    prob[prob < 0.001] = 0.001
     nData = len(prob)
     lower_p = np.ones(nData) * cdf_func(lowerS)
     upper_p = np.ones(nData) * cdf_func(upperS)
@@ -25,7 +27,7 @@ def find_quantile_one(cdf_func, prob, lowerS = -10.0, upperS = 10.0):
         lower_p[mid_p < prob] = mid_p[mid_p < prob]
         lowerS[mid_p < prob] = mid_S[mid_p < prob]
         lower_p[upperS-lowerS < 1.0e-5] = upper_p[upperS-lowerS < 1.0e-5]
-    return mid_S
+    return lowerS
 
 def obtain_optimal_sigma(y_array):
     grid = GridSearchCV(KernelDensity(kernel="gaussian"),
@@ -39,8 +41,8 @@ def get_CDF_and_dense(data_name, data_config, y_array):
         const = data_config.get("const", 1.0)
         lower = data_config.get("lower", 0.0) * const
         upper = data_config.get("upper", 1.0) * const
-        cdf_func = uniform_CDF(lower, upper)
-        dense_func = lambda x: 1.0/(upper-lower)
+        cdf_func = uniform_CDF(min(lower,upper), max(lower,upper))
+        dense_func = lambda x: 1.0
         link_func = cdf_func
     elif(data_name == "normal"):
         mu = 0.0

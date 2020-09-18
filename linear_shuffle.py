@@ -22,7 +22,7 @@ class LinearShuffle:
 
     def fit(self, X_unlabeled, Y_shuffled, rep=100):
         nDim = X_unlabeled.shape[1]
-        self.w = np.random.random(nDim)
+        self.w = np.random.uniform(-1.0,1.0,nDim)
         logger.debug("start training")
         sorted_Y = np.sort(Y_shuffled)
         sorted_Y_inv = np.sort(Y_shuffled)[::-1]
@@ -31,10 +31,10 @@ class LinearShuffle:
             pred = X_unlabeled.dot(self.w)
             permutation = np.argsort(pred)
             X_tmp = X_unlabeled[permutation]
-            if(X_tmp.T.dot(sorted_Y) > X_tmp.T.dot(sorted_Y_inv)):
-                true_Y = sorted_Y
+            if np.abs(X_tmp.T.dot(sorted_Y)) > np.abs(X_tmp.T.dot(sorted_Y_inv)):
+                true_Y = np.copy(sorted_Y)
             else:
-                true_Y = sorted_Y_inv
+                true_Y = np.copy(sorted_Y_inv)
             self.w = np.linalg.solve(X_tmp.T.dot(X_tmp), X_tmp.T.dot(true_Y))
             
         logger.debug(self.w)

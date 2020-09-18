@@ -56,7 +56,7 @@ class OptimizedTaylorCUmodel:
             self.derive_optimal_const(min_y, max_y)
         else:
             self.weight = optimal_weight
-        
+        logger.debug(self.weight) 
         x0 = np.zeros(nDim+1)
         logger.debug("start training")
         params = minimize(score, x0, args = (self,))

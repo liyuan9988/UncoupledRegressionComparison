@@ -44,6 +44,7 @@ class CUmodel:
 
     def predict_val(self, X, lowerS = -10, upperS = 10):
         pred = self.link_func(X.dot(self.param[1:])+self.param[0])
+        logger.debug(pred)
         #return np.array([find_quantile_one(self.cdf_func,p,lowerS,upperS) for p in pred])
         return find_quantile_one(self.cdf_func,pred,lowerS,upperS)
 
